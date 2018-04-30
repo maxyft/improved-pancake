@@ -1,0 +1,27 @@
+{
+  "name": "node-back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "express-favicon": "^2.0.0",
+    "mongodb": "^3.0.2",
+    "mongoose": "^5.0.7",
+    "nodemon": "^1.15.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
+    "ws": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "server.js"
+  },
+  "scripts": {
+    "dev": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

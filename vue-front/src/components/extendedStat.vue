@@ -2,7 +2,10 @@
   <div class="wrapper">
     <div class="chart-history-wrapper">
       <div class="chart">
-        <div class="extended-top"><p>Pair Chart</p></div>
+        <div class="extended-top-frames">
+          <div>5 min</div>
+          <div>1 hour</div>
+        </div>
         <div id="chart"></div>
         <div class="candle-info">
           <div class="inside-candle-info">
@@ -140,18 +143,22 @@ h2, h3 { margin: 0; }
       flex: auto;
       display: flex;
       flex-direction: column;
-      .extended-top {
+      .extended-top-frames {
         flex: auto;
         flex-grow: 0;
-        height: 30px;
-        line-height: 30px;
+        display: flex;
+        flex-direction: row;
+        height: 40px;
+        line-height: 40px;
         border-bottom: 1px solid rgba(255,255,255, .35);
-        & p {
-          margin: 0;
-          margin: auto;
-          color: #a4d5e0;
-          font-size: 18.5px;
-          font-weight: 500;
+        & div {
+          position: relative;
+          width: 100px;
+          flex: auto;
+          flex-grow: 0;
+          color: #38B2CE;
+          margin-right: 10px;
+          border-bottom: 1px solid #38B2CE;
         }
       }
     }

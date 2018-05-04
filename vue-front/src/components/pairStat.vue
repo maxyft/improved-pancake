@@ -1,6 +1,6 @@
 <template>
 <div class="wrapper">
-  <div class="wrapper-top"><p>Last 5-min changes</p></div>
+  <div class="wrapper-top"><p>Last changes</p></div>
     <div class="pair-wrapper">
       <div v-for="(item, index) in pending" class="pair" @click="setActive(item.pair, $event)">
         <div class="pair-desc name" v-if="index === 0"><b>BTC</b> / USDT</div>
@@ -52,13 +52,15 @@ export default {
       active: 'BTCUSDT',
       lastTimeStamp: null,
       selectedPairInfo: [],
-      timers: []
+      timers: [],
+      hourStat: []
     }
   },
   created() {
     this.refreshData();
-    let i = setInterval(this.refreshData, 2500);
-    this.timers.push(i);
+    //let i = setInterval(this.refreshData, 2500);
+    setTimeout(this.createHourStat, 2000);
+    //this.timers.push(i);
   },
   beforeDestroy() {
     clearInterval(this.timers.pop());
@@ -88,6 +90,53 @@ export default {
             this.selectedPairInfo.unshift(selectedPending) // add new pending item
             this.$emit('updated', this.selectedPairInfo);
           })
+      },
+      createHourStat() {
+        let pairs = this.pairs.slice().reverse();
+        let namesArr = [];
+        let tmpArr = [];
+        pairs.forEach(item => {
+          if(namesArr.indexOf(item.pair) === -1) {
+            namesArr.push(item.pair);
+          } else return;
+        });
+        namesArr.forEach(item => {
+          let currentPairs = pairs.filter(p => p.pair === item);
+          let closeTime = currentPairs[0].filldate + 3300000; // open + 55 min
+          let stat = this.getNewStat();
+          let prices = [];
+          currentPairs.forEach(item => {
+            stat.pair = item.pair;
+            prices.push(item.price.high);
+            prices.push(item.price.low);
+            if(!stat.price.open) stat.price.open = item.price.open;
+            if(!stat.filldate) stat.filldate = closeTime;
+            if(item.filldate > closeTime) {
+              stat.price.close = item.price.close;
+              stat.price.last = item.price.last;
+              this.hourStat.push(stat);
+              prices = [];
+              stat = this.getNewStat();
+              closeTime = item.filldate + 3300000;
+            }
+
+            stat.orders.buy += item.orders.buy;
+            stat.orders.sell += item.orders.sell;
+            stat.volume.buy += item.volume.buy;
+            stat.volume.sell += item.volume.sell;
+            stat.price.high = Math.max(...prices);
+            stat.price.low = Math.min(...prices);
+          });
+        });
+      },
+      getNewStat() {
+        return {
+          pair: '',
+          filldate: 0,
+          price: { open: 0, close: 0, last: 0, high: 0, low: 0 },
+          orders: { buy: 0, sell: 0 },
+          volume: { buy: 0, sell: 0 }
+        };
       },
       setActive(pair, event) {
         if(this.active === pair) return;
@@ -136,12 +185,11 @@ export default {
     flex: auto;
     flex-grow: 0;
     background: #303030;
-    border-bottom: 1px solid rgba(255,255,255, .35);
+    border-bottom: 1px solid #38B2CE;
     p {
       margin: 0;
-      color: #a4d5e0;
+      color: #38B2CE;
       font-size: @large-text;
-      font-weight: 500;
     }
   }
   .pair-wrapper {

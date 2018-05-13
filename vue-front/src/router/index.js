@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import trdMain from '@/components/trdMain'
+import trdMain from '@/components/Main'
 
 Vue.use(Router)
 

@@ -1,15 +1,15 @@
 <template>
   <div class="grid">
-      <Nav></Nav>
-      <Chart
-        v-bind:active="active"
-        v-bind:timeframe="timeframe">
-      </Chart>
-      <Orders></Orders>
-      <PairList
-        @updated='setActive($event)'
-        v-bind:timeframe="timeframe">
-      </PairList>
+    <Nav></Nav>
+    <Chart
+      v-bind:active="active"
+      @changeTimeframe="changeTimeFrame($event)">
+    </Chart>
+    <Orders></Orders>
+    <PairList
+      @updated='setActive($event)'
+      v-bind:timeframe="timeframe">
+    </PairList>
   </div>
 </template>
 
@@ -30,28 +30,31 @@ export default {
   data() {
     return {
       active: [],
-      timeframe: null
+      timeframe: '5m'
     }
   },
   methods: {
     setActive(event) { // event - payload from PairStat, type - Array
       this.active = event;
+    },
+    changeTimeFrame(event) { // event - payload from Chart, type - String
+      this.timeframe = event;
     }
   }
 }
 </script>
 
 <style scoped lang="less">
-  .grid {
-    width: 100%;
-    height: 100%;
-    background: darken(#211f26, 2.5%);
-    display: grid;
-    grid-template-rows: 40px 75% auto;
-    grid-template-columns: 72.5% 27.5%;
-    grid-template-areas:
-    "header header"
-    "chart list"
-    "orders list"
-  }
+.grid {
+  width: 100%;
+  height: 100%;
+  background: darken(#211f26, 2.5%);
+  display: grid;
+  grid-template-rows: 40px 75% auto;
+  grid-template-columns: 72.5% 27.5%;
+  grid-template-areas:
+  "header header"
+  "chart list"
+  "orders list";
+}
 </style>

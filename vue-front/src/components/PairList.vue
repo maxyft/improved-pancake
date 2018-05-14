@@ -57,7 +57,8 @@ export default {
     return {
       pairs: [],
       pending: [],
-      active: null
+      active: null,
+      frame: this.timeframe
     }
   },
   watch: {
@@ -78,54 +79,49 @@ export default {
             if(response.data.pending) this.pending = response.data.pending;
           })
           .then(() => {
-            if(this.active) {
+            if(this.active && this.frame === '5m') {
               let tempArr = this.pairs.filter(item => item.pair === this.active);
               let pending = this.pending.find(item => item.pair === this.active);
               tempArr.unshift(pending);
-              this.$emit('updated', tempArr);
-            } else return;
+              this.$emit( 'updated', tempArr );
+            } else if(this.active && this.frame === '1h') {
+              this.$emit( 'updated', this.createHourStat() );
+            }
           });
       },
-      createHourStat() { // rebuild
-        let pairs = this.pairs.slice().reverse();
-        let namesArr = [];
-        let tmpArr = [];
+      createHourStat() { // create 1-hour stat array for chart building
+        let pairs = this.pairs.filter(item => item.pair === this.active).reverse();
+        let pending = this.pending.find(item => item.pair === this.active);
+        pairs.push(pending);
+
+        let closeTime = pairs[0].filldate + 3300000; // open + 55 min
+        let stat = this.getNewStat();
+        let prices = [], hourStat = [];
         pairs.forEach(item => {
-          if(namesArr.indexOf(item.pair) === -1) {
-            namesArr.push(item.pair);
-          } else return;
+          stat.pair = item.pair;
+          prices.push(item.price.high);
+          prices.push(item.price.low);
+
+          if(!stat.price.open) stat.price.open = item.price.open;
+          if(!stat.filldate) stat.filldate = closeTime;
+
+          if(item.filldate > closeTime) {
+            stat.price.close = item.price.close;
+            stat.price.last = item.price.last;
+            hourStat.push(stat);
+            prices = [];
+            stat = this.getNewStat();
+            closeTime = item.filldate + 3300000;
+          }
+
+          stat.orders.buy += item.orders.buy;
+          stat.orders.sell += item.orders.sell;
+          stat.volume.buy += item.volume.buy;
+          stat.volume.sell += item.volume.sell;
+          stat.price.high = Math.max(...prices);
+          stat.price.low = Math.min(...prices);
         });
-        namesArr.forEach(item => {
-          let currentPairs = pairs.filter(p => p.pair === item);
-          let closeTime = currentPairs[0].filldate + 3300000; // open + 55 min
-          let stat = this.getNewStat();
-          let prices = [];
-          currentPairs.forEach((item, index) => {
-            stat.pair = item.pair;
-            prices.push(item.price.high);
-            prices.push(item.price.low);
-
-            if(!stat.price.open) stat.price.open = item.price.open;
-
-            if(!stat.filldate) stat.filldate = closeTime;
-
-            if(item.filldate > closeTime) {
-              stat.price.close = item.price.close;
-              stat.price.last = item.price.last;
-              this.hourStat.push(stat);
-              prices = [];
-              stat = this.getNewStat();
-              closeTime = item.filldate + 3300000;
-            }
-
-            stat.orders.buy += item.orders.buy;
-            stat.orders.sell += item.orders.sell;
-            stat.volume.buy += item.volume.buy;
-            stat.volume.sell += item.volume.sell;
-            stat.price.high = Math.max(...prices);
-            stat.price.low = Math.min(...prices);
-          });
-        });
+        return hourStat;
       },
       getNewStat() {
         return {
@@ -140,17 +136,20 @@ export default {
         if(this.active === pair) return;
 
         let target = $(event.target);
-        if($(target).hasClass('p') || $(target).hasClass('v')) return;
-
         let active = $(target).closest('.pair-wrapper').find('.pair.active');
+
         $(active).each((index, item) => { $(item).removeClass('active') });
         $(target).closest('.pair').toggleClass('active');
 
         this.active = pair;
-        let tempArr = this.pairs.filter(item => item.pair === this.active);
-        let pending = this.pending.find(item => item.pair === this.active);
-        tempArr.unshift(pending);
-        this.$emit('updated', tempArr);
+        if(this.frame === '5m') {
+          let tempArr = this.pairs.filter(item => item.pair === this.active);
+          let pending = this.pending.find(item => item.pair === this.active);
+          tempArr.unshift(pending);
+          this.$emit( 'updated', tempArr);
+        } else {
+          this.$emit( 'updated', this.createHourStat() );
+        }
       },
       showInfo(event) {
         $('#help-info').html(event.target.dataset.text);

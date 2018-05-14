@@ -41,7 +41,7 @@ export default {
     return {
       buyVol: null,
       sellVol: null,
-      timeframe: null
+      timeframe: '5m'
     }
   },
   computed: {
@@ -61,6 +61,7 @@ export default {
     changeTimeFrame(event) {
       let frame = event.target.dataset.frame;
       this.timeframe = frame;
+      this.$emit( 'changeTimeframe', this.timeframe );
     },
     showCandleInfo(event) {
       let candlestick = $(event.target).closest('g.candlestick'),
@@ -76,7 +77,7 @@ export default {
       $('g.candlestick').off('mouseenter', this.showCandleInfo);
       $('g.candlestick').off('mouseleave', this.hideCandleInfo);
       let newData = [];
-      this.chartInfo.forEach((item) => {
+      this.chartInfo.forEach(item => {
         let obj = {
           high: item.price.high,
           low: item.price.low,

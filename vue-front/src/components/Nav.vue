@@ -14,9 +14,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 	nav {
-		grid-area: header;
 		background: #0b090f;
+		grid-area: header;
 	}
 </style>
